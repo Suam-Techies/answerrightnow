@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bubble" x1="10" y1="8" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#164e48" />
+      <stop offset="1" stop-color="#0e3b36" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#f3efe4" />
+  <path fill="url(#bubble)" d="M12 15a9 9 0 0 1 9-9h22a9 9 0 0 1 9 9v16a9 9 0 0 1-9 9h-9.8L22 54V40h-1a9 9 0 0 1-9-9z" />
+  <path fill="none" stroke="#f3efe4" stroke-linecap="round" stroke-width="3" d="M19 34h7" />
+  <path fill="#e0b75c" d="m32 14 2.4 6.6L41 23l-6.6 2.4L32 32l-2.4-6.6L23 23l6.6-2.4z" />
+</svg>
