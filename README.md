@@ -20,6 +20,16 @@ You can start editing the page by modifying `app/page.js`. The page auto-updates
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Chatbot configuration
+
+Set `CHATBOT_URL` to the service URL that accepts the chatbot `POST` payload and returns newline-delimited JSON:
+
+```bash
+CHATBOT_URL=https://your-chatbot-service.example/api/chat
+```
+
+For local development, an `http://localhost`, `http://127.0.0.1`, or `http://[::1]` endpoint is also accepted. Restart the Next.js server after changing the environment variable. Do not expose `CHATBOT_URL` with a `NEXT_PUBLIC_` prefix.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

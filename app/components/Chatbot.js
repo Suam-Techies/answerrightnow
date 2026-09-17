@@ -133,9 +133,14 @@ export default function Chatbot() {
         const errorText = await response.text();
         let detail = "The assistant could not reply.";
         try {
-          detail = JSON.parse(errorText).detail || detail;
+          const parsed = JSON.parse(errorText);
+          if (typeof parsed.detail === "string" && parsed.detail.trim()) {
+            detail = parsed.detail.trim();
+          }
         } catch {
-          if (errorText.trim() && !errorText.toLowerCase().includes("<html")) detail = errorText;
+          if (errorText.trim() && !/<!doctype html|<html[\s>]/i.test(errorText)) {
+            detail = errorText.trim();
+          }
         }
         throw new Error(detail);
       }

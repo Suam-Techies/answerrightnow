@@ -756,6 +756,7 @@
 
 .photoBand {
   position: relative;
+  min-height: 540px;
   background: #0e3b36;
   overflow: hidden;
 }
@@ -764,7 +765,7 @@
   position: absolute;
   inset: 0;
   width: 100%;
-  height: 540px;
+  height: 100%;
   object-fit: cover;
   filter: saturate(0.8) brightness(0.74);
 }
@@ -1117,7 +1118,10 @@
     flex: 1 1 180px;
   }
   .photoBand img {
-    height: 420px;
+    height: 100%;
+  }
+  .photoBand {
+    min-height: 420px;
   }
   .photoBand .wrap {
     padding: 48px 20px;

@@ -1,28 +1,22 @@
-const chatbotUrl = process.env.CHATBOT_URL?.trim();
+const chatbotUrl =
+  process.env.CHATBOT_URL?.trim() ||
+  "http://suamai-670525487.us-east-1.elb.amazonaws.com/chat";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request) {
-  if (!chatbotUrl || !chatbotUrl.startsWith("https://")) {
-    return Response.json(
-      { detail: "The chatbot service is not configured with a secure HTTPS endpoint." },
-      { status: 503 },
-    );
-  }
-
   try {
     const body = await request.text();
-    const timeoutSignal = AbortSignal.timeout(300_000);
-    const signal = AbortSignal.any([request.signal, timeoutSignal]);
+
     const upstream = await fetch(chatbotUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/x-ndjson",
+        "Accept": "application/x-ndjson",
       },
       body,
-      signal,
+      signal: AbortSignal.timeout(300_000),
       cache: "no-store",
     });
 
@@ -37,30 +31,56 @@ export async function POST(request) {
         } catch {
           // Keep the status-based message when the upstream JSON is malformed.
         }
+      } else if (errorText.trim() && !/<!doctype html|<html[\s>]/i.test(errorText)) {
+        detail = errorText.trim();
       }
 
       return Response.json({ detail }, {
-        status: upstream.status,
-        headers: { "Cache-Control": "no-cache, no-transform" },
+        status: upstream.status >= 500 ? 503 : upstream.status,
+        headers: {
+          "Cache-Control": "no-cache, no-transform",
+        },
       });
     }
 
     if (!upstream.body) {
-      return Response.json({ detail: "Chatbot returned an empty stream." }, { status: 502 });
+      return new Response(
+        JSON.stringify({
+          detail: "Chatbot returned an empty stream.",
+        }),
+        {
+          status: 502,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
 
     const stream = new ReadableStream({
       async start(controller) {
         const reader = upstream.body.getReader();
+
         try {
           while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            if (value) controller.enqueue(value);
+            const { value, done } =
+              await reader.read();
+
+            if (done) {
+              break;
+            }
+
+            if (value) {
+              controller.enqueue(value);
+            }
           }
           controller.close();
         } catch (error) {
-          console.error("Streaming proxy error:", error);
+          console.error(
+            "Streaming proxy error:",
+            error
+          );
+
           controller.error(error);
         } finally {
           reader.releaseLock();
@@ -73,12 +93,24 @@ export async function POST(request) {
       headers: {
         "Content-Type": "application/x-ndjson; charset=utf-8",
         "Cache-Control": "no-cache, no-store, must-revalidate",
-        Connection: "keep-alive",
+        "Connection": "keep-alive",
         "X-Accel-Buffering": "no",
       },
     });
   } catch (error) {
-    console.error("Chatbot upstream request failed:", error);
-    return Response.json({ detail: "The chatbot service is unavailable." }, { status: 503 });
+    console.error(
+      "Chatbot upstream request failed:",
+      error
+    );
+
+    return Response.json(
+      {
+        detail:
+          "The chatbot service is unavailable.",
+      },
+      {
+        status: 503,
+      }
+    );
   }
 }
